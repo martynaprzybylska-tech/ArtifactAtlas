@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- ============================================================ -->
+    <!-- METADATA & PAGE CONFIGURATION -->
+    <!-- ============================================================ -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ArtifactAtlas - Histopathological artifact reference library.">
+    <title>ArtifactAtlas</title>
+    <link rel="icon" type="image/png" sizes="64x64" href="icons/slide.png">
+
+    <!-- ============================================================ -->
+    <!-- STYLING: CSS for layout, colors, responsive design, and animations -->
+    <!-- ============================================================ -->
+    <style>
+        /* ============================================================ */
+        /* BASE STYLING: Global body styles and typography */
+        /* ============================================================ */
+        body {
+            margin: 0;
+            font-family: Inter, sans-serif;
+            background: #f5f7fa;
+        }
+
+        /* ================= HEADER ================= */
+        .header {
+            background: linear-gradient(135deg, #ba74a1, #684a83);
+            color: white;
+            padding: 50px 70px;
+        }
+
+        .header-content {
+            max-width: 1500px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 70px;
+            align-items: start;
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-left h1 {
+            margin: 0;
+            font-size: 60px;
+            font-weight: 700;
+            text-transform: uppercase;
+            line-height: 0.95;
+        }
+
+        .header-left h1::after {
+            content: "";
+            display: block;
+            width: 140px;
+            height: 4px;
+            margin-top: 20px;
+            border-radius: 3px;
+            background: white;
+        }
+
+        .artifact-badge {
+            margin-top: 30px;
+            display: inline-block;
+            padding: 10px 18px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 999px;
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            width: fit-content;
+            background: rgba(255,255,255,0.08);
+        }
+
+        .image-count {
+            margin-top: 15px;
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .header-right {
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .info-section {
+            margin: 0;
+        }
+
+        .info-heading {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-text {
+            font-size: 20px;
+            font-weight: 400;
+            line-height: 1.65;
+            max-width: 950px;
+            color: rgba(255,255,255,0.98);
+        }
+
+        /* Info boxes styling - frosted glass effect */
+        .info-section {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        /* Icon styling within header */
+        .artifact-icon {
+            width: 280px;
+            height: 280px;
+            object-fit: contain;
+            margin-top: 0px;
+            margin-bottom: 1px;
+        }
+
+        .icon-section {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 2px;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        /* ================= GALLERY ================= */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            padding: 45px;
+            max-width: 1700px;
+            margin: auto;
+        }
+
+        .gallery img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+            transition: 0.25s ease;
+        }
+
+        /* Gallery image hover effect - slight zoom */
+        .gallery img:hover {
+            transform: scale(1.02);
+        }
+
+        /* ============================================================ */
+        /* RESPONSIVE DESIGN: Mobile and tablet layouts */
+        /* ============================================================ */
+        @media (max-width: 1000px) {
+
+            .header {
+                padding: 40px 30px;
+            }
+
+            .artifact-title h1 {
+                font-size: 42px;
+            }
+
+            .info-text {
+                font-size: 18px;
+            }
+
+            .gallery {
+                grid-template-columns: 1fr;
+                padding: 25px;
+            }
+        }
+
+        /* ============================================================ */
+        /* LIGHTBOX / MODAL IMAGE VIEWER: Full-screen image display */
+        /* Allows users to click gallery images for enlarged viewing */
+        /* ============================================================ */
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.94);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 90vw;
+            max-height: 90vh;
+            border-radius: 12px;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 35px;
+            color: white;
+            font-size: 55px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            opacity: 0.7;
+        }
+
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 70px;
+            height: 70px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            font-size: 42px;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .prev-btn {
+            left: 25px;
+        }
+
+        .next-btn {
+            right: 25px;
+        }
+
+        .image-counter {
+            position: absolute;
+            bottom: 25px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ============================================================ -->
+    <!-- HEADER SECTION: Title, description, icon, and metadata -->
+    <!-- ============================================================ -->
+    <div class="header">
+    
+        <div class="header-content">
+    
+            <div class="header-left">
+    
+                <h1 id="title"></h1>
+                <div class="icon-section">
+                
+                    <img id="artifactIcon" class="artifact-icon">
+                
+                </div>
+    
+            </div>
+    
+            <div class="header-right">
+    
+                <div class="info-section">
+                    <div class="info-heading">🔬 Description</div>
+                    <div class="info-text" id="description"></div>
+                </div>
+                <div class="info-section">
+                    <div class="info-heading">🧪 Formation Process</div>
+                    <div class="info-text" id="process"></div>
+                </div>
+    
+            </div>
+    
+        </div>
+    
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- GALLERY SECTION: 3-column grid of artifact images -->
+    <!-- ============================================================ -->
+    <div class="gallery" id="gallery"></div>
+
+    <!-- ============================================================ -->
+    <!-- LIGHTBOX / MODAL: Full-screen image viewer with navigation -->
+    <!-- ============================================================ -->
+    <div class="lightbox" id="lightbox">
+    
+        <span class="close-btn" id="closeBtn">&times;</span>
+    
+        <button class="nav-btn prev-btn" id="prevBtn">
+            &#10094;
+        </button>
+    
+        <img id="lightboxImg">
+    
+        <button class="nav-btn next-btn" id="nextBtn">
+            &#10095;
+        </button>
+    
+        <div class="image-counter" id="imageCounter"></div>
+    
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT: Page functionality, data, and event handlers -->
+    <!-- ============================================================ -->
+    <script>
+
+        /* ============================================================ */
+        /* ARTIFACT DATA STRUCTURE */
+        /* Contains definitions for all 12 tissue artifact types */
+        /* Each includes: title, description, formation process, folder */
+        /* ============================================================ */
+        const data = {
+
+            ink: {
+                title: "Ink",
+                description: "Ink artifacts present as dense, opaque, non-biological colored deposits.",
+                process: "Ink artifacts are result of the unexpected migration of tissue marking dyes, used during grossing, into deeper tissue layers. They obscure cellular structures and can create diagnostic pitfalls by mimicking endogenous pigments like melanin.",
+                folder: "ink"
+            },
+
+            knife: {
+                title: "Knife marks",
+                description: "Knife marks are present as straight, parallel lines across the tissue section.The resulting localized loss of tissue can obscure focal lesions and confuse AI segmentation models into misinterpreting them as tissue boundaries.",
+                process: "Knife marks are caused by microscopic nicks on the microtome blade from hard inclusions.",
+                folder: "knife_marks"
+            },
+
+            tears: {
+                title: "Tears",
+                description: "Tears are jagged, irregular physical ruptures within a section. These voids make it difficult to obtain a reliable image and challenge automated image analysis by causing AI models to misidentify them as genuine biological features.",
+                process: "Tears typically occur when over-processed, brittle specimens fail mechanically during microtomy or mounting.",
+                folder: "tears"
+            },
+
+            folds: {
+                title: "Folds",
+                description: "Folds are dark, intensely stained overlapping tissue bands. They obscure localized architectural details and represent a primary cause of focus blurring in whole slide images by disrupting the flat scanning plane.",
+                process: "Folds occur when a section collapses on itself during flotation or mounting.",
+                folder: "folds"
+            },
+
+            precipitates: {
+                title: "Precipitates",
+                description: "Precipitates are dark, irregular, mostly crystalline aggregates that deposit randomly onto the tissue surface. Unlike biological pigments, they appear to float above the cellular layer and can be misinterpreted as e.g. microorganisms.",
+                process: "Precipitates are caused due to chemical instability or evaporation of staining reagents.",
+                folder: "precipitates"
+            },
+
+            dust: {
+                title: "Dust",
+                description: "Dust contamination consists of ambient particulate matter, like textile fibers. These irregular, refractile particles can mimic pathogens and distract scanner autofocus algorithms, causing localized image blurring.",
+                process: "Dust pieces are settling onto the slide from the laboratory environment before coverslipping.",
+                folder: "dust"
+            },
+
+            marker: {
+                title: "Marker",
+                description: "Marker artifacts are broad, high-contrast coloured manual annotations. In digital pathology, they block out underlying tissue details, disrupt scanner focus and color calibration.",
+                process: "Marker artifacts are coloured manual annotations drawn by pathologists on the glass surface to outline regions of interest.",
+                folder: "marker"
+            },
+
+            scratch: {
+                title: "Scratch",
+                description: "Scratches are superficial physical abrasions on the glass slide or coverslip surface. They cause light diffraction that obscures underlying morphology and introduces out-of-distribution noise that disrupts deep learning segmentation models.",
+                process: "Scratches are introduced after coverslipping during handling, storage or transport.",
+                folder: "scratch"
+            },
+
+            stitching: {
+                title: "Stitching",
+                description: "Stitching artifacts are digital grid-like seams or structural misalignments. While human pathologists easily compensate for these discontinuities using context, AI models are highly sensitive to them.",
+                process: "Stitching artifacts occur when individual image tiles are computationally fused into a whole slide image.",
+                folder: "stitching"
+            },
+
+            blurring: {
+                title: "Blurring",
+                description: "Blurring is a digital imaging failure that looks like unsharp or too vague regions.",
+                process: "Blurring appear where the scanner captures tissue outside the optimal focal plane, erasing high-frequency details. While human observers navigate mild blurring through contextual clues, it severely impairs computer vision algorithms, causing tissue misclassifications and inaccurate nuclear segmentation.",
+                folder: "blurring"
+            },
+
+            bubbles: {
+                title: "Air Bubbles",
+                description: "Air bubbles are sharp, circular voids with highly refractive black borders. They render the underlying morphology virtually uninterpretable and frequently trigger severe autofocus failures during digital slide scanning.",
+                process: "Air bubbles are created when air becomes entrapped under the glass coverslip during mounting.",
+                folder: "bubbles"
+            }
+        };
+
+        /* ============================================================ */
+        /* PAGE INITIALIZATION: Load artifact data based on URL parameter */
+        /* The 'type' query parameter determines which artifact to display */
+        /* ============================================================ */
+        const params = new URLSearchParams(window.location.search);
+        const type = params.get("type");
+
+        let images = [];  // Array to store loaded gallery images
+
+        // Validate that artifact type exists in data
+        if (data[type]) {
+
+            // Populate header with artifact information
+            document.getElementById("title").innerHTML =
+                data[type].title;
+
+            document.getElementById("description").innerHTML =
+                data[type].description;
+
+            document.getElementById("process").innerHTML =
+                data[type].process;
+
+            // Set artifact icon image source
+            document.getElementById("artifactIcon").src =
+                `icons/${data[type].folder}.png`;
+
+            document.title =
+                `${data[type].title} | ArtifactAtlas`;
+
+            const gallery = document.getElementById("gallery");
+
+            images = [];
+
+            // Load up to 30 gallery images from artifact-specific folder
+            // Images that fail to load are automatically removed from DOM
+            for (let i = 1; i <= 30; i++) {
+
+                const img = document.createElement("img");
+                img.loading = "lazy";
+                img.alt =`${data[type].title} example ${i}`;
+                artifactIcon.alt =`${data[type].title} icon`;
+                img.src = `gallery/${data[type].folder}/${i}.png`;
+
+                // Remove broken image links from gallery
+                img.onerror = function () {
+                    this.remove();
+                };
+
+                gallery.appendChild(img);
+                images.push(img);
+            }
+        }
+
+        /* ============================================================ */
+        /* LIGHTBOX FUNCTIONALITY: Modal image viewer setup and controls */
+        /* Provides full-screen viewing with navigation and keyboard support */
+        /* ============================================================ */
+
+            // Cache DOM elements for lightbox functionality
+            const lightbox = document.getElementById("lightbox");
+            const lightboxImg = document.getElementById("lightboxImg");
+            const closeBtn = document.getElementById("closeBtn");
+            const prevBtn = document.getElementById("prevBtn");
+            const nextBtn = document.getElementById("nextBtn");
+            const imageCounter = document.getElementById("imageCounter");
+
+            // Track current image position in lightbox
+            let currentIndex = 0;
+
+            /* Updates the image counter display (e.g., "3 / 15") */
+            function updateCounter() {
+                imageCounter.textContent =
+                    `${currentIndex + 1} / ${images.length}`;
+            }
+
+            /* Opens the lightbox modal with specified image */
+            function openImage(index) {
+
+                currentIndex = index;
+
+                lightboxImg.src = images[index].src;
+
+                updateCounter();
+
+                // Show lightbox by adding 'active' class
+                lightbox.classList.add("active");
+            }
+
+            /* Closes the lightbox modal by removing 'active' class */
+            function closeImage() {
+                lightbox.classList.remove("active");
+            }
+
+            /* Navigates to the next image (wraps around to beginning) */
+            function nextImage() {
+
+                // Use modulo operator to loop back to start at end
+                currentIndex =
+                    (currentIndex + 1) % images.length;
+
+                lightboxImg.src =
+                    images[currentIndex].src;
+
+                updateCounter();
+            }
+
+            /* Navigates to the previous image (wraps around to end) */
+            function prevImage() {
+
+                // Add images.length before modulo to handle negative numbers
+                currentIndex =
+                    (currentIndex - 1 + images.length)
+                    % images.length;
+
+                lightboxImg.src =
+                    images[currentIndex].src;
+
+                updateCounter();
+            }
+
+            /* ============================================================ */
+            /* EVENT LISTENER SETUP: Attach click handlers to gallery images */
+            /* Delayed to ensure DOM is fully rendered */
+            /* ============================================================ */
+            setTimeout(() => {
+
+                // Add click listener to each gallery image to open lightbox
+                images.forEach((img, index) => {
+
+                    img.addEventListener("click", () => {
+                        openImage(index);
+                    });
+
+                });
+
+            }, 100);
+
+            // Close button: dismiss lightbox
+            closeBtn.addEventListener(
+                "click",
+                closeImage
+            );
+
+            // Next button: navigate to next image
+            nextBtn.addEventListener(
+                "click",
+                nextImage
+            );
+
+            // Previous button: navigate to previous image
+            prevBtn.addEventListener(
+                "click",
+                prevImage
+            );
+
+            // Clicking on lightbox background (not the image) closes it
+            lightbox.addEventListener(
+                "click",
+                function (e) {
+
+                    // Only close if clicking on the background, not the image itself
+                    if (e.target === lightbox) {
+                        closeImage();
+                    }
+
+                }
+            );
+
+            /* ============================================================ */
+            /* KEYBOARD CONTROLS: Support for lightbox navigation */
+            /* - Escape: close lightbox */
+            /* - Arrow Right: next image */
+            /* - Arrow Left: previous image */
+            /* ============================================================ */
+            document.addEventListener(
+                "keydown",
+                function (e) {
+
+                    // Only process keyboard input when lightbox is open
+                    if (!lightbox.classList.contains("active"))
+                        return;
+
+                    // Escape key closes the lightbox
+                    if (e.key === "Escape")
+                        closeImage();
+
+                    // Right arrow navigates to next image
+                    if (e.key === "ArrowRight")
+                        nextImage();
+
+                    // Left arrow navigates to previous image
+                    if (e.key === "ArrowLeft")
+                        prevImage();
+                }
+            );
+
+    </script>
+
+</body>
+
+</html>

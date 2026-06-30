@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta property="og:title" content="ArtifactAtlas">
+    <meta property="og:url" content="https://zp5-artefact-library.pages.instytut-badawczy-ideas.ghe.com/">
+    <meta property="og:description" content="Open-access library of histopathological artifacts organized by workflow stage.">
+    <meta name="description" content="ArtifactAtlas is an open-access library of histopathological artifacts organized by workflow stage for education, quality assurance and computational pathology research.">
+    <meta property="og:image" content="https://zp5-artefact-library.pages.instytut-badawczy-ideas.ghe.com/icons/ArtifactAtlas.png">
+    <meta property="og:type" content="website">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ArtifactAtlas</title>
+    <link rel="icon" type="image/png" sizes="64x64" href="icons/slide.png">
+    <style>
+        /* ============================================================ */
+        /* BASE STYLES */
+        /* ============================================================ */
+        :root {
+            --primary: #684a83;
+            --primary-dark: #4f355f;
+            --accent: #ba74a1;
+            --text: #2f3a46;
+            --muted: #667085;
+            --border: #e3e7ed;
+            --surface: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, sans-serif;
+            background: #f5f7fa;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        img {
+            display: block;
+            max-width: 100%;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* ============================================================ */
+        /* HERO SECTION */
+        /* ============================================================ */
+        .hero {
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            color: white;
+            padding: 60px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.25), transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.18), transparent 50%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 40px;
+            max-width: 1500px;
+            margin: auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-text {
+            flex: 1;
+            text-align: left;
+        }
+
+        .hero-text h1 {
+            font-size: 55px;
+            margin-bottom: 6px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .hero-text h2 {
+            font-size: 30px;
+            font-weight: 400;
+            margin: 0 0 20px;
+            opacity: 0.95;
+            position: relative;
+        }
+
+        .hero-text h2::after {
+            content: "";
+            display: block;
+            width: 120px;
+            height: 5px;
+            background: white;
+            margin-top: 12px;
+            border-radius: 2px;
+        }
+
+        .hero-text p {
+            font-size: 18px;
+            line-height: 1.7;
+            max-width: 640px;
+            margin: 0;
+        }
+
+        .hero-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-image img {
+            width: 100%;
+            max-width: 700px;
+            border-radius: 14px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ============================================================ */
+        /* IMAGE SLIDER */
+        /* ============================================================ */
+        .slider {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 350px;
+            overflow: hidden;
+            border-radius: 14px;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        .slide.active {
+            opacity: 1;
+        }
+
+        .arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.4);
+            color: white;
+            border: none;
+            font-size: 28px;
+            padding: 10px 12px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: 0.25s ease;
+        }
+
+        .arrow:hover {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .arrow.left {
+            left: 10px;
+        }
+
+        .arrow.right {
+            right: 10px;
+        }
+
+        /* ============================================================ */
+        /* ARTIFACT TREE */
+        /* ============================================================ */
+        .artifact-tree {
+            max-width: 1600px;
+            margin: 80px auto;
+            padding: 0 20px;
+        }
+
+        .tree-header {
+            text-align: center;
+            margin: 70px auto 70px;
+            max-width: 760px;
+        }
+
+        .tree-header-title {
+            font-size: 42px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .tree-header-title::after {
+            content: "";
+            display: block;
+            width: 120px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--primary));
+            border-radius: 2px;
+            margin: 18px auto 0;
+        }
+
+        .tree-header-subtitle {
+            margin-top: 22px;
+            font-size: 19px;
+            color: var(--muted);
+        }
+
+        .tree-columns {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 40px;
+            margin-top: 120px;
+            align-items: start;
+        }
+
+        .tree-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .tree-column h3 {
+            font-size: 22px;
+            color: #555;
+            min-height: 70px;
+            margin: 0 0 10px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .node {
+            background: var(--surface);
+            padding: 12px 10px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            width: 255px;
+            min-height: 100px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .node:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.16);
+        }
+
+        .node img {
+            width: 110px;
+            height: 110px;
+            object-fit: cover;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .text {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .title {
+            font-weight: 600;
+            font-size: 20px;
+        }
+
+        .desc {
+            font-size: 15px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* ============================================================ */
+        /* FOOTER */
+        /* ============================================================ */
+        .footer {
+            margin-top: 80px;
+            background: #f5f7fa;
+            border-top: 1px solid #d7dde5;
+            padding: 35px 70px;
+        }
+
+        .footer-content {
+            max-width: 1500px;
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+        }
+
+        .footer-logo {
+            height: 70px;
+            width: auto;
+        }
+
+        .footer-divider {
+            width: 1px;
+            height: 85px;
+            background: #dddddd;
+        }
+
+        .footer-text {
+            display: flex;
+            flex-direction: column;
+            color: #000000;
+        }
+
+        .footer-small {
+            font-size: 16px;
+            opacity: 0.8;
+            margin-bottom: 4px;
+        }
+
+        .footer-title {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .footer-location {
+            margin-top: 4px;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .footer-right {
+            text-align: right;
+            color: #444;
+        }
+
+        .project-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .project-subtitle {
+            font-size: 15px;
+            color: var(--muted);
+        }
+
+        @media (max-width: 900px) {
+            .hero-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .hero-text {
+                text-align: center;
+            }
+
+            .hero-text h2::after {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .tree-columns {
+                grid-template-columns: 1fr;
+            }
+
+            .node {
+                width: 100%;
+                max-width: 360px;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .footer-right {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ============================================================ -->
+    <!-- HERO SECTION -->
+    <!-- ============================================================ -->
+    <div class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>ArtifactAtlas</h1>
+                <h2>Artifact Library for Histopathological Images</h2>
+                <p>
+                A comprehensive, multi-source dataset and visual reference for histopathology artifacts in H&E staining. ArtifactAtlas
+                showcases examples of the most common 11 types of artifacts from 5 critical workflow stages - from grossing to digital
+                scanning.
+                Use our browser to explore 330 examples of the characteristic morphology, etiology, and diagnostic impact of physical
+                disruptions, contaminants, and digital errors.
+                </p>
+            </div>
+
+            <div class="hero-image">
+                <div class="slider" aria-label="Artifact gallery slideshow">
+                    <img src="photos/header2.png" class="slide active" alt="Histopathological artifact example 1" loading="eager">
+                    <img src="photos/header.png" class="slide" alt="Histopathological artifact example 2" loading="lazy">
+                    <img src="photos/header3.png" class="slide" alt="Histopathological artifact example 3" loading="lazy">
+                    <img src="photos/header4.png" class="slide" alt="Histopathological artifact example 4" loading="lazy">
+                    <img src="photos/header5.png" class="slide" alt="Histopathological artifact example 5" loading="lazy">
+
+                    <button class="arrow left" type="button" aria-label="Show previous image">&#10094;</button>
+                    <button class="arrow right" type="button" aria-label="Show next image">&#10095;</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ARTIFACT DIRECTORY -->
+    <!-- ============================================================ -->
+    <div class="artifact-tree">
+        <div class="tree-header">
+            <div class="tree-header-title">
+                Histopathological Artifacts
+            </div>
+            <div class="tree-header-subtitle">
+                Browse artifacts grouped according to the stage of the histopathological workflow.
+            </div>
+        </div>
+
+        <div class="tree-columns">
+            <div class="tree-column">
+                <h3>Grossing Phase</h3>
+                <a href="artifact.html?type=ink" class="node">
+                    <img src="icons/ink.png" alt="Ink artifact icon" loading="lazy">
+                    <div class="text">
+                        <div class="title">Ink</div>
+                        <div class="desc">Tissue marking dye</div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="tree-column">
+                <h3>Sectioning Phase</h3>
+
+                <a href="artifact.html?type=knife" class="node">
+                    <img src="icons/knife_marks.png" alt="Knife marks artifact icon" loading="lazy">
+                    <div class="text">
+                        <div class="title">Knife marks</div>
+                        <div class="desc">Blade traces</div>
+                    </div>
+                </a>
+
+                <a href="artifact.html?type=tears" class="node">
+                    <img src="icons/tears.png" alt="Tears artifact icon" loading="lazy">
+                    <div class="text">
+                        <div class="title">Tears</div>
+                        <div class="desc">Tissue rupture damage</div>
+                    </div>
+                </a>
+
+                <a href="artifact.html?type=folds" class="node">
+                    <img src="icons/folds.png" alt="Folds artifact icon" loading="lazy">
+                    <div class="text">
+                        <div class="title">Folds</div>
+                        <div class="desc">Tissue folding artifacts</div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="tree-column">
+                <h3>Staining &amp; Coverslipping Phase</h3>
+
+                <a href="artifact.html?type=precipitates" class="node">
+                    <img src="icons/precipitates.png" alt="Precipitates artifact icon" loading="lazy">
+                    <div class="text">
+                        <div class="title">Precipitates</div>
+                        <div class="desc">Staining residues</div>
+                    </div>
+                </a>
+
+                <a href="artifact.html?type=dust" class="node">
+                    <img src="icons/dust.png" alt="Dust artifact icon" loading="lazy">
+                    <div class="text">
+                        <div class="title">Dust</div>
+                        <div class="desc">External contamination</div>
+                    </div>
+                </a>
+
+                <a href="artifact.html?type=bubbles" class="node">
+                    <img src="icons/bubbles.png" alt="Air bubbles artifact icon" loading="lazy">
+                    <div class="text">
+                        <div class="title">Air Bubbles</div>
+                        <div class="desc">Entrapped air under coverslip</div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="tree-column">
+                <h3>Reviewing &amp; Archiving Phase</h3>
+
+                <a href="artifact.html?type=marker" class="node">
+                    <img src="icons/marker.png" alt="Marker artifact icon" loading="lazy">
+                    <div class="text">
+                        <div class="title">Marker</div>
+                        <div class="desc">External annotations</div>
+                    </div>
+                </a>
+
+                <a href="artifact.html?type=scratch" class="node">
+                    <img src="icons/scratch.png" alt="Scratch artifact icon" loading="lazy">
+                    <div class="text">
+                        <div class="title">Scratch</div>
+                        <div class="desc">Slide surface damage</div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="tree-column">
+                <h3>Scanning Phase</h3>
+
+                <a href="artifact.html?type=stitching" class="node">
+                    <img src="icons/stitching.png" alt="Stitching artifact icon" loading="lazy">
+                    <div class="text">
+                        <div class="title">Stitching</div>
+                        <div class="desc">Image stitching errors</div>
+                    </div>
+                </a>
+
+                <a href="artifact.html?type=blurring" class="node">
+                    <img src="icons/blurring.png" alt="Blurring artifact icon" loading="lazy">
+                    <div class="text">
+                        <div class="title">Blurring</div>
+                        <div class="desc">Out-of-focus regions</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+
+            <div class="footer-left">
+
+                <img src="icons/IDEAS_logo.png" alt="IDEAS Research Institute" class="footer-logo" loading="lazy">
+                <div class="footer-divider"></div>
+
+                <div class="footer-text">
+
+                    <div class="footer-small">
+                        Developed at
+                    </div>
+
+                    <div class="footer-title">
+                        IDEAS Research Institute
+                    </div>
+
+                    <div class="footer-location">
+                        Warsaw, Poland
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="footer-right">
+
+                <div class="project-title">
+                    ArtifactAtlas
+                </div>
+
+                <div class="project-subtitle">
+                    Artifact Library for Histopathological Images
+                </div>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+    <script>
+        /* ============================================================ */
+        /* HERO SLIDER */
+        /* Automatically rotates featured artifact images and allows */
+        /* manual navigation with the left and right controls. */
+        /* ============================================================ */
+        const slides = Array.from(document.querySelectorAll('.slide'));
+
+        if (slides.length > 0) {
+            let currentIndex = 0;
+
+            function showSlide(index) {
+                slides.forEach((slide, slideIndex) => {
+                    slide.classList.toggle('active', slideIndex === index);
+                });
+            }
+
+            function nextSlide() {
+                currentIndex = (currentIndex + 1) % slides.length;
+                showSlide(currentIndex);
+            }
+
+            function prevSlide() {
+                currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+                showSlide(currentIndex);
+            }
+
+            showSlide(currentIndex);
+            window.setInterval(nextSlide, 30000);
+
+            document.querySelector('.arrow.right')?.addEventListener('click', nextSlide);
+            document.querySelector('.arrow.left')?.addEventListener('click', prevSlide);
+        }
+    </script>
+</body>
+</html>
